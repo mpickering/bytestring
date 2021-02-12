@@ -82,7 +82,8 @@ module Data.ByteString.Internal (
 import Prelude hiding (concat, null)
 import qualified Data.List as List
 
-import Foreign.ForeignPtr       (ForeignPtr, withForeignPtr)
+import Foreign.ForeignPtr       (ForeignPtr, withForeignPtr, newForeignPtr)
+import Foreign.Marshal.Alloc
 import Foreign.Ptr              (Ptr, FunPtr, plusPtr)
 import Foreign.Storable         (Storable(..))
 
@@ -454,7 +455,9 @@ createAndTrim' l f = do
 -- | Wrapper of 'Foreign.ForeignPtr.mallocForeignPtrBytes' with faster implementation for GHC
 --
 mallocByteString :: Int -> IO (ForeignPtr a)
-mallocByteString = mallocPlainForeignPtrBytes
+mallocByteString s = do
+  p <- mallocBytes s
+  newForeignPtr finalizerFree p
 {-# INLINE mallocByteString #-}
 
 ------------------------------------------------------------------------
